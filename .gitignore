@@ -13,3 +13,12 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+/space-api-client
+*.tfstate
+*.backup
+/bash
+/examples/.terraform/
+*.terraform.lock.hcl
+*.idea
+/.idea
+/examples/main.tf
