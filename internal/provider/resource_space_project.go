@@ -2,7 +2,7 @@ package provider
 
 import (
 	"context"
-	sc "github.com/hashicorp/terraform-provider-space/space-api-client"
+	sc "github.com/skydivervrn/space-api-client"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

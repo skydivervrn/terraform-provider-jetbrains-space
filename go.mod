@@ -1,4 +1,4 @@
-module github.com/hashicorp/terraform-provider-space
+module github.com/skydivervrn/terraform-provider-space
 
 go 1.18
 
