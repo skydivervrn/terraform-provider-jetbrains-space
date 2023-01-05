@@ -9,34 +9,36 @@ import (
 )
 
 const (
-	spaceProjectDataSourceTestResourceId = "3U65GM4NKw79"
+	testNameSpaceRepositoryResource = "go-test"
 )
 
-func TestAccDataSourceSpaceProject(t *testing.T) {
-	//t.Skip("data source not yet implemented, remove this once you add your own code")
+func TestAccRepository(t *testing.T) {
+	//t.Skip("resource not yet implemented, remove this once you add your own code")
 
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceSpaceProject(),
+				Config: testAccRepository(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchResourceAttr(
-						fmt.Sprintf("data.%s.test", spaceProjectDataSourceResourceName), "id", regexp.MustCompile("")),
+						fmt.Sprintf("%s.test", spaceRepositoryResourceName), "name", regexp.MustCompile("")),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceSpaceProject() string {
+func testAccRepository() string {
 	return fmt.Sprintf(`
-data %s "test" {
-  id = "%s"
+resource %s "test" {
+  project_id = "%s"
+  name = "%s"
 }
 `,
-		spaceProjectDataSourceResourceName,
+		spaceRepositoryResourceName,
 		spaceProjectDataSourceTestResourceId,
+		testNameSpaceRepositoryResource,
 	)
 }

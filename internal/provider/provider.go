@@ -4,12 +4,13 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	sc "github.com/skydivervrn/space-api-client"
+	sc "github.com/skydivervrn/terraform-provider-space/space-api-client"
 )
 
 const (
-	spaceProjectDataSourceResourceName = "space_project_data_source"
 	spaceProjectResourceName           = "space_project"
+	spaceRepositoryResourceName        = "space_git_repository"
+	spaceProjectDataSourceResourceName = "space_project_data_source"
 )
 
 func init() {
@@ -50,7 +51,8 @@ func New(version string) func() *schema.Provider {
 				spaceProjectDataSourceResourceName: dataSourceSpaceProject(),
 			},
 			ResourcesMap: map[string]*schema.Resource{
-				spaceProjectResourceName: resourceSpaceProject(),
+				spaceProjectResourceName:    resourceSpaceProject(),
+				spaceRepositoryResourceName: resourceSpaceRepository(),
 			},
 		}
 

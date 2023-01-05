@@ -2,7 +2,7 @@ package provider
 
 import (
 	"context"
-	sc "github.com/skydivervrn/space-api-client"
+	sc "github.com/skydivervrn/terraform-provider-space/space-api-client"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -12,8 +12,7 @@ import (
 func resourceSpaceProject() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description: "This resource will create project for JetBrains Space https://jetbrains.space",
-
+		Description:   "This resource will create project for JetBrains Space https://jetbrains.space",
 		CreateContext: resourceSpaceProjectCreate,
 		ReadContext:   resourceSpaceProjectRead,
 		UpdateContext: resourceSpaceProjectUpdate,
@@ -22,45 +21,45 @@ func resourceSpaceProject() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"key": &schema.Schema{
+			"key": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Unique key which couldn't be changed in future.",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Space project name.",
 			},
-			"private": &schema.Schema{
+			"private": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"icon": &schema.Schema{
+			"icon": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"latest_repository_activity": &schema.Schema{
+			"latest_repository_activity": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"created_at_iso": &schema.Schema{
+			"created_at_iso": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"created_at_timestamp": &schema.Schema{
+			"created_at_timestamp": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"archived": &schema.Schema{
+			"archived": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},

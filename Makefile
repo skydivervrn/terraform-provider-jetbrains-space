@@ -3,7 +3,7 @@ HOSTNAME=hashicorp.com
 NAMESPACE=skydivervrn
 NAME=space
 BINARY=terraform-provider-${NAME}
-VERSION=0.0.1
+VERSION=0.0.7
 OS_ARCH=darwin_arm64
 
 default: install
