@@ -16,3 +16,6 @@ jobs:
 
       - name: Test
         run: make test
+        env: # Or as an environment variable
+          SPACE_URL: ${{ secrets.SpaceUrl }}
+          SPACE_TOKEN: ${{ secrets.SpaceToken }}
