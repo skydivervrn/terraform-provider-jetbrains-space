@@ -21,3 +21,4 @@
 *.idea
 /.idea
 /examples/main.tf
+.DS_Store
