@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	spaceProjectDataSourceTestResourceId = "3U65GM4NKw79"
+	spaceProjectDataSourceTestResourceId = "19lHBY1GRU5x"
 )
 
 func TestAccDataSourceSpaceProject(t *testing.T) {
