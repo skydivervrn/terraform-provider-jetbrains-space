@@ -202,8 +202,8 @@ github.com/shopspring/decimal v1.2.0/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFR
 github.com/shopspring/decimal v1.3.1 h1:2Usl1nmF/WZucqkFZhnfFYxxxu8LG21F6nPQBE5gKV8=
 github.com/shopspring/decimal v1.3.1/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFRcu2hWCYk4o=
 github.com/sirupsen/logrus v1.4.1/go.mod h1:ni0Sbl8bgC9z8RoU9G6nDWqqs/fq4eDPysMBDgk/93Q=
-github.com/skydivervrn/space-api-client v0.0.1 h1:Uj0Z2ApWF1K0fzSIgpng1CB5ALJehMBXxicQovc7Cu4=
-github.com/skydivervrn/space-api-client v0.0.1/go.mod h1:yMGr2NC4eCJRgti1gOqtGlaSIiUg+yFEn2X9fwM52wA=
+github.com/skydivervrn/jetbrains-space-api-client-go v0.0.6 h1:GZ4I5JrmIwfWAiunuaYaqgzkysDdniS1skz0HwSWaHc=
+github.com/skydivervrn/jetbrains-space-api-client-go v0.0.6/go.mod h1:RuJzyzum1owbNonl4uaDkK48Sz0FsssVWQIXnJH2+XY=
 github.com/spf13/cast v1.3.1/go.mod h1:Qx5cxh0v+4UWYiBimWS+eyWzqEqokIECu5etghLkUJE=
 github.com/spf13/cast v1.5.0 h1:rj3WzYc11XZaIZMPKmwP96zkFEnnAmV8s6XbB2aY32w=
 github.com/spf13/cast v1.5.0/go.mod h1:SpXXQ5YoyJw6s3/6cMTQuxvgRl3PCJiyaX9p6b155UU=
