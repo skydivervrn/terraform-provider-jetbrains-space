@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"github.com/skydivervrn/terraform-provider-space/internal/provider"
+	"github.com/skydivervrn/terraform-provider-jetbrains-space/internal/provider"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 )
