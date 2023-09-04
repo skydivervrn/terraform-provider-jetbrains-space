@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     jetbrains-space = {
-      version = "0.0.12"
-      source  = "hashicorp.com/skydivervrn/jetbrains-space"
+      version = "0.0.16"
+      source  = "skydivervrn/jetbrains-space"
     }
   }
 }
