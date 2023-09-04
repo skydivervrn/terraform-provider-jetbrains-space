@@ -1,4 +1,4 @@
-module github.com/skydivervrn/terraform-provider-space
+module github.com/skydivervrn/terraform-provider-jetbrains-space
 
 go 1.18
 

@@ -13,7 +13,7 @@ const (
 )
 
 func TestAccRepository(t *testing.T) {
-	t.Skip("resource not yet implemented, remove this once you add your own code")
+	//t.Skip("resource not yet implemented, remove this once you add your own code")
 
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -32,6 +32,15 @@ func TestAccRepository(t *testing.T) {
 
 func testAccRepository() string {
 	return fmt.Sprintf(`
+terraform {
+  required_providers {
+    jetbrains-space = {
+      version = "0.0.10"
+      source  = "hashicorp.com/skydivervrn/jetbrains-space"
+    }
+  }
+}
+provider "jetbrains-space" {}
 resource %s "test" {
   project_id = "%s"
   name = "%s"
