@@ -20,5 +20,6 @@
 *.terraform.lock.hcl
 *.idea
 /.idea
-/examples/main.tf
 .DS_Store
+/go.work
+/go.work.sum

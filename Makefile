@@ -1,9 +1,9 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
 HOSTNAME=hashicorp.com
 NAMESPACE=skydivervrn
-NAME=space
+NAME=jetbrains-space
 BINARY=terraform-provider-${NAME}
-VERSION=0.0.7
+VERSION=0.0.9
 OS_ARCH=darwin_arm64
 
 default: install
