@@ -4,13 +4,13 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	sc "github.com/skydivervrn/terraform-provider-space/space-api-client"
+	sc "github.com/skydivervrn/jetbrains-space-api-client-go"
 )
 
 const (
-	spaceProjectResourceName           = "space_project"
-	spaceRepositoryResourceName        = "space_git_repository"
-	spaceProjectDataSourceResourceName = "space_project_data_source"
+	spaceProjectResourceName           = "jetbrains-space_project"
+	spaceRepositoryResourceName        = "jetbrains-space_git_repository"
+	spaceProjectDataSourceResourceName = "jetbrains-space_project_data_source"
 )
 
 func init() {

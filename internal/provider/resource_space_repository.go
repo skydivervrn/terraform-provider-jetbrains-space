@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	//sc "github.com/skydivervrn/space-api-client"
-	sc "github.com/skydivervrn/terraform-provider-space/space-api-client"
+	sc "github.com/skydivervrn/jetbrains-space-api-client-go"
 )
 
 func resourceSpaceRepository() *schema.Resource {

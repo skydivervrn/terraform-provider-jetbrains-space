@@ -35,7 +35,7 @@ func main() {
 	opts := &plugin.ServeOpts{
 		Debug: debugMode,
 
-		ProviderAddr: "skydivervrn/space",
+		ProviderAddr: "skydivervrn/jetbrains-space",
 
 		ProviderFunc: provider.New(version),
 	}
