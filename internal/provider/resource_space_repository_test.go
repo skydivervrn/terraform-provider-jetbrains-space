@@ -2,52 +2,39 @@ package provider
 
 import (
 	"fmt"
-	"regexp"
+	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const (
-	testNameSpaceRepositoryResource = "go-test"
+var (
+	testProjectId = os.Getenv("TERRAFORM_PROVIDER_JETBRAINS_SPACE_TESTS_PROJECT_ID")
 )
 
-func TestAccRepository(t *testing.T) {
-	t.Skip("resource not yet implemented, remove this once you add your own code")
-
-	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
+func TestAccSpaceProjectRepositoryResource(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
+			// Read testing
 			{
-				Config: testAccRepository(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr(
-						fmt.Sprintf("%s.test", spaceRepositoryResourceName), "name", regexp.MustCompile("")),
+				Config: providerConfig + testAccSpaceProjectRepositoryResourceConfig(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("jetbrains-space_project_repository.tests", "name", "unit-tests"),
 				),
 			},
 		},
 	})
 }
 
-func testAccRepository() string {
+func testAccSpaceProjectRepositoryResourceConfig() string {
 	return fmt.Sprintf(`
-terraform {
-  required_providers {
-    jetbrains-space = {
-      version = "0.0.10"
-      source  = "hashicorp.com/skydivervrn/jetbrains-space"
-    }
-  }
+resource "jetbrains-space_project_repository" "tests" {
+  project_id          = "%s"
+  name                = "unit-tests"
+  description         = "Test description"
+  default_branch_name = "master"
 }
-provider "jetbrains-space" {}
-resource %s "test" {
-  project_id = "%s"
-  name = "%s"
-}
-`,
-		spaceRepositoryResourceName,
-		spaceProjectDataSourceTestResourceId,
-		testNameSpaceRepositoryResource,
-	)
+`, testProjectId)
 }

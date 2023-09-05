@@ -1,42 +1,33 @@
 package provider
 
 import (
-	"fmt"
-	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const (
-	spaceProjectResourceTestName = "space_project_resource_test"
-)
-
-func TestAccResourceSpace(t *testing.T) {
-	t.Skip("resource not yet implemented, remove this once you add your own code")
-
-	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
+func TestAccSpaceProjectResource(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
+			// Read testing
 			{
-				Config: testAccSpaceProject(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr(
-						fmt.Sprintf("%s.test", spaceProjectResourceName), "id", regexp.MustCompile("")),
+				Config: providerConfig + testAccSpaceProjectResourceConfig(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("jetbrains-space_project.test", "name", "Unit-tests"),
 				),
 			},
 		},
 	})
 }
 
-func testAccSpaceProject() string {
-	return fmt.Sprintf(`
-resource %s "test" {
-  name = "%s"
+func testAccSpaceProjectResourceConfig() string {
+	return `
+resource "jetbrains-space_project" "test" {
+  name        = "Unit-tests"
+  description = "Unit-tests"
+  private     = false
 }
-`,
-		spaceProjectResourceName,
-		spaceProjectResourceTestName,
-	)
+`
 }
