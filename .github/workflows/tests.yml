@@ -15,7 +15,7 @@ jobs:
           go-version: 1.20
 
       - name: Test
-        run: make test
+        run: make
         env: # Or as an environment variable
           TERRAFORM_PROVIDER_JETBRAINS_SPACE_URL: ${{ secrets.SpaceUrl }}
           TERRAFORM_PROVIDER_JETBRAINS_SPACE_TOKEN: ${{ secrets.SpaceToken }}
