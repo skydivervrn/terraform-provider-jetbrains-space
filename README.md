@@ -16,7 +16,7 @@ Once you've written your provider, you'll want to [publish it on the Terraform R
 
 ## Requirements
 
-- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
+- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.2
 - [Go](https://golang.org/doc/install) >= 1.19
 
 ## Building The Provider
@@ -45,7 +45,7 @@ Then commit the changes to `go.mod` and `go.sum`.
 
 ## Using the provider
 
-Fill this in for each provider
+TBD
 
 ## Developing the Provider
 
