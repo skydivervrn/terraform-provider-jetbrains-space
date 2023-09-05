@@ -2,163 +2,234 @@ package provider
 
 import (
 	"context"
-	sc "github.com/skydivervrn/jetbrains-space-api-client-go"
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	jsc "github.com/skydivervrn/jetbrains-space-api-client-go"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-func resourceSpaceProject() *schema.Resource {
-	return &schema.Resource{
-		// This description is used by the documentation generator and the language server.
-		Description:   "This resource will create project for JetBrains Space https://jetbrains.space",
-		CreateContext: resourceSpaceProjectCreate,
-		ReadContext:   resourceSpaceProjectRead,
-		UpdateContext: resourceSpaceProjectUpdate,
-		DeleteContext: resourceSpaceProjectDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"key": {
-				Type:        schema.TypeString,
+// Ensure the implementation satisfies the expected interfaces.
+var (
+	_ resource.Resource              = &spaceProjectResource{}
+	_ resource.ResourceWithConfigure = &spaceProjectResource{}
+)
+
+// spaceProjectResource is the resource implementation.
+type spaceProjectResource struct {
+	client *jsc.Client
+}
+
+// NewSpaceProjectResource is a helper function to simplify the provider implementation.
+func NewSpaceProjectResource() resource.Resource {
+	return &spaceProjectResource{}
+}
+
+// Configure adds the provider configured client to the resource.
+func (r *spaceProjectResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	client, ok := req.ProviderData.(*jsc.Client)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Data Source Configure Type",
+			fmt.Sprintf("Expected *jsc.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.client = client
+}
+
+// Metadata returns the resource type name.
+func (r *spaceProjectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_project"
+}
+
+// Schema defines the schema for the resource.
+func (r *spaceProjectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "Unique key which couldn't be changed in future.",
+				Description: "The uniq ID of existed Space project to get data from",
 			},
-			"name": {
-				Type:        schema.TypeString,
+			"key": schema.StringAttribute{
+				Computed:    true,
+				Description: "Magic field. Project name written in uppercase",
+			},
+			"name": schema.StringAttribute{
 				Required:    true,
-				Description: "Space project name.",
+				Description: "Name of a project",
 			},
-			"private": {
-				Type:     schema.TypeBool,
-				Computed: true,
+			"private": schema.BoolAttribute{
+				Optional:    true,
+				Description: "Defines if project private or public",
 			},
-			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+			"description": schema.StringAttribute{
+				Optional:    true,
+				Description: "Project description",
 			},
-			"icon": {
-				Type:     schema.TypeInt,
-				Computed: true,
+			"icon": schema.StringAttribute{
+				Computed:    true,
+				Description: "TBD",
 			},
-			"latest_repository_activity": {
-				Type:     schema.TypeString,
-				Computed: true,
+			"latest_repository_activity": schema.StringAttribute{
+				Computed:    true,
+				Description: "Latest activity in project repos",
 			},
-			"created_at_iso": {
-				Type:     schema.TypeString,
-				Computed: true,
+			"created_at_iso": schema.StringAttribute{
+				Computed:    true,
+				Description: "TBD",
 			},
-			"created_at_timestamp": {
-				Type:     schema.TypeInt,
-				Computed: true,
+			"created_at_timestamp": schema.Int64Attribute{
+				Computed:    true,
+				Description: "TBD",
 			},
-			"archived": {
-				Type:     schema.TypeBool,
-				Computed: true,
+			"archived": schema.BoolAttribute{
+				Computed:    true,
+				Description: "TBD",
 			},
 		},
 	}
 }
 
-func resourceSpaceProjectSetAllValues(ctx context.Context, d *schema.ResourceData, project sc.Project) diag.Diagnostics {
-	var diags diag.Diagnostics
-	if err := d.Set("key", project.Key.Key); err != nil {
-		return diag.FromErr(err)
+// Create creates the resource and sets the initial Terraform state.
+func (r *spaceProjectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var state spaceProjectModel
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if err := d.Set("name", project.Name); err != nil {
-		return diag.FromErr(err)
+	createProjectData := jsc.CreateProjectData{
+		Name:        state.Name.ValueString(),
+		Description: state.Description.ValueString(),
+		Private:     state.Private.ValueBool(),
 	}
-	if err := d.Set("private", project.Private); err != nil {
-		return diag.FromErr(err)
+	project, err := r.client.CreateProject(createProjectData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Unable to Create Space project name: %s", state.Name.ValueString()),
+			err.Error(),
+		)
+		return
 	}
-	if err := d.Set("description", project.Description); err != nil {
-		return diag.FromErr(err)
+	state.ID = types.StringValue(project.ID)
+	state.Key = types.StringValue(project.Key.Key)
+	state.Name = types.StringValue(project.Name)
+	state.Private = types.BoolValue(project.Private)
+	state.Description = types.StringValue(project.Description)
+	state.Icon = types.StringValue(project.Icon)
+	state.LatestRepositoryActivity = types.StringValue(project.LatestRepositoryActivity)
+	state.CreatedAtIso = types.StringValue(project.CreatedAt.Iso)
+	state.CreatedAtTimestamp = types.Int64Value(project.CreatedAt.Timestamp)
+	state.Archived = types.BoolValue(project.Archived)
+
+	//Set state
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if err := d.Set("icon", project.Icon); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("latest_repository_activity", project.LatestRepositoryActivity); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("created_at_iso", project.CreatedAt.Iso); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("created_at_timestamp", project.CreatedAt.Timestamp); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("archived", project.Archived); err != nil {
-		return diag.FromErr(err)
-	}
-	return diags
 }
 
-func resourceSpaceProjectCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*sc.Client)
-	var diags diag.Diagnostics
-
-	project, err := client.CreateProject(d.Get("name").(string))
-	if err != nil {
-		return diag.FromErr(err)
+// Read refreshes the Terraform state with the latest data.
+func (r *spaceProjectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state spaceProjectModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	resourceSpaceProjectSetAllValues(ctx, d, project)
-	d.SetId(project.ID)
+	project, err := r.client.GetProject(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Unable to Read Space project id: %s", state.ID.ValueString()),
+			err.Error(),
+		)
+		return
+	}
+	state.Key = types.StringValue(project.Key.Key)
+	state.Name = types.StringValue(project.Name)
+	state.Private = types.BoolValue(project.Private)
+	state.Description = types.StringValue(project.Description)
+	state.Icon = types.StringValue(project.Icon)
+	state.LatestRepositoryActivity = types.StringValue(project.LatestRepositoryActivity)
+	state.CreatedAtIso = types.StringValue(project.CreatedAt.Iso)
+	state.CreatedAtTimestamp = types.Int64Value(project.CreatedAt.Timestamp)
+	state.Archived = types.BoolValue(project.Archived)
 
-	// write logs using the tflog package
-	// see https://pkg.go.dev/github.com/hashicorp/terraform-plugin-log/tflog
-	// for more information
-	tflog.Trace(ctx, "created a resource")
-	resourceSpaceProjectRead(ctx, d, meta)
-	return diags
+	//Set state
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
-func resourceSpaceProjectRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	id := d.Id()
-	var diags diag.Diagnostics
-
-	client := meta.(*sc.Client)
-	projectData, err := client.GetProject(id)
-	if err != nil {
-		return diag.FromErr(err)
+// Update updates the resource and sets the updated Terraform state on success.
+func (r *spaceProjectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var state spaceProjectModel
+	var config spaceProjectModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	diags = req.Config.Get(ctx, &config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	resourceSpaceProjectSetAllValues(ctx, d, projectData)
+	updateProjectData := jsc.UpdateProjectData{
+		Id:          state.ID.ValueString(),
+		Name:        config.Name.ValueString(),
+		Description: config.Description.ValueString(),
+		Private:     config.Private.ValueBool(),
+	}
+	project, err := r.client.UpdateProject(updateProjectData)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Unable to Update Space project name: %s", state.Name.ValueString()),
+			err.Error(),
+		)
+		return
+	}
+	state.ID = types.StringValue(project.ID)
+	state.Key = types.StringValue(project.Key.Key)
+	state.Name = types.StringValue(project.Name)
+	state.Private = types.BoolValue(project.Private)
+	state.Description = types.StringValue(project.Description)
+	state.Icon = types.StringValue(project.Icon)
+	state.LatestRepositoryActivity = types.StringValue(project.LatestRepositoryActivity)
+	state.CreatedAtIso = types.StringValue(project.CreatedAt.Iso)
+	state.CreatedAtTimestamp = types.Int64Value(project.CreatedAt.Timestamp)
+	state.Archived = types.BoolValue(project.Archived)
 
-	// always run
-	d.SetId(id)
-
-	return diags
+	//Set state
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
-func resourceSpaceProjectUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	id := d.Id()
-	var diags diag.Diagnostics
-	name := d.Get("name").(string)
-	client := meta.(*sc.Client)
-	projectData, err := client.UpdateProject(id, name)
+// Delete deletes the resource and removes the Terraform state on success.
+func (r *spaceProjectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state spaceProjectModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	err := r.client.DeleteProject(state.ID.ValueString())
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Unable to Delete Space project name: %s", state.Name.ValueString()),
+			err.Error(),
+		)
+		return
 	}
-	if err := d.Set("name", projectData.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	resourceSpaceProjectRead(ctx, d, meta)
-	return diags
-}
-
-func resourceSpaceProjectDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	id := d.Id()
-	var diags diag.Diagnostics
-	client := meta.(*sc.Client)
-	err := client.DeleteProject(id)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	return diags
 }
