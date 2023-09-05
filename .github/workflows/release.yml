@@ -5,6 +5,8 @@ name: Release
 # "v*" (e.g. v0.1.0) is created.
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
 
@@ -14,14 +16,7 @@ permissions:
   contents: write
 
 jobs:
-  golden-job:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Display the path
-        run: echo $PATH
-        shell: bash
   goreleaser:
-    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
