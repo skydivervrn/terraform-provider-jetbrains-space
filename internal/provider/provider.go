@@ -1,76 +1,98 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package provider
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	sc "github.com/skydivervrn/jetbrains-space-api-client-go"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	jsc "github.com/skydivervrn/jetbrains-space-api-client-go"
+	"os"
 )
 
-const (
-	spaceProjectResourceName           = "jetbrains-space_project"
-	spaceRepositoryResourceName        = "jetbrains-space_git_repository"
-	spaceProjectDataSourceResourceName = "jetbrains-space_project_data_source"
-)
+// Ensure SpaceProvider satisfies various provider interfaces.
+var _ provider.Provider = &SpaceProvider{}
 
-func init() {
-	// Set descriptions to support markdown syntax, this will be used in document generation
-	// and the language server.
-	schema.DescriptionKind = schema.StringMarkdown
-
-	// Customize the content of descriptions when output. For example you can add defaults on
-	// to the exported descriptions if present.
-	// schema.SchemaDescriptionBuilder = func(s *schema.Schema) string {
-	// 	desc := s.Description
-	// 	if s.Default != nil {
-	// 		desc += fmt.Sprintf(" Defaults to `%v`.", s.Default)
-	// 	}
-	// 	return strings.TrimSpace(desc)
-	// }
+// SpaceProvider defines the provider implementation.
+type SpaceProvider struct {
+	// version is set to the provider version on release, "dev" when the
+	// provider is built and ran locally, and "test" when running acceptance
+	// testing.
+	version string
 }
 
-func New(version string) func() *schema.Provider {
-	return func() *schema.Provider {
-		p := &schema.Provider{
-			Schema: map[string]*schema.Schema{
-				"url": &schema.Schema{
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "URL for space instance. Example: https://test.jetbrains.space",
-					DefaultFunc: schema.EnvDefaultFunc("SPACE_URL", nil),
-				},
-				"token": &schema.Schema{
-					Type:        schema.TypeString,
-					Optional:    true,
-					Sensitive:   true,
-					Description: "Token for access Space instance. https://www.jetbrains.com/help/space/personal-tokens.html",
-					DefaultFunc: schema.EnvDefaultFunc("SPACE_TOKEN", nil),
-				},
-			},
-			DataSourcesMap: map[string]*schema.Resource{
-				spaceProjectDataSourceResourceName: dataSourceSpaceProject(),
-			},
-			ResourcesMap: map[string]*schema.Resource{
-				spaceProjectResourceName:    resourceSpaceProject(),
-				spaceRepositoryResourceName: resourceSpaceRepository(),
-			},
-		}
+// SpaceProviderModel describes the provider data model.
+type SpaceProviderModel struct {
+	URL   types.String `tfsdk:"url"`
+	TOKEN types.String `tfsdk:"token"`
+}
 
-		p.ConfigureContextFunc = configure(version, p)
+func (p *SpaceProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+	resp.TypeName = "jetbrains-space"
+	resp.Version = p.version
+}
 
-		return p
+func (p *SpaceProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"url": schema.StringAttribute{
+				Description: "Jetbrains Space URL. If not set, provider will try to read environment variable TERRAFORM_PROVIDER_JETBRAINS_SPACE_URL",
+				Optional:    true,
+			},
+			"token": schema.StringAttribute{
+				Description: "Jetbrains Space token. If not set, provider will try to read environment variable TERRAFORM_PROVIDER_JETBRAINS_SPACE_TOKEN",
+				Optional:    true,
+				Sensitive:   true,
+			},
+		},
 	}
 }
 
-func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	return func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
-		var diags diag.Diagnostics
-		url := d.Get("url").(string)
-		token := d.Get("token").(string)
-		client, err := sc.NewClient(url, token)
-		if err != nil {
-			return nil, diag.FromErr(err)
+func (p *SpaceProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	var data SpaceProviderModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	url := os.Getenv("TERRAFORM_PROVIDER_JETBRAINS_SPACE_URL")
+	token := os.Getenv("TERRAFORM_PROVIDER_JETBRAINS_SPACE_TOKEN")
+
+	// Example client configuration for data sources and resources
+	client, err := jsc.NewClient(url, token)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to Create Jetbrains Space API Client",
+			"An unexpected error occurred when creating the Jetbrains API client. "+
+				"If the error is not clear, please contact the provider developers.\n\n"+
+				"Jetbrains Space Client Error: "+err.Error(),
+		)
+		return
+	}
+	resp.DataSourceData = client
+	resp.ResourceData = client
+}
+
+func (p *SpaceProvider) Resources(ctx context.Context) []func() resource.Resource {
+	return []func() resource.Resource{}
+}
+
+func (p *SpaceProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+	return []func() datasource.DataSource{
+		NewSpaceProjectDataSource,
+	}
+}
+
+func New(version string) func() provider.Provider {
+	return func() provider.Provider {
+		return &SpaceProvider{
+			version: version,
 		}
-		return client, diags
 	}
 }
